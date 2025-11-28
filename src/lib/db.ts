@@ -1,12 +1,41 @@
 import Database from 'better-sqlite3';
 import path from 'path';
+import fs from 'fs';
 
-const DB_PATH = process.env.DATABASE_PATH || path.join(process.cwd(), 'data', 'app.db');
+// Validate and sanitize database path
+function getValidatedDbPath(): string {
+  const envPath = process.env.DATABASE_PATH;
+  const defaultPath = path.join(process.cwd(), 'data', 'app.db');
+  
+  if (!envPath) {
+    return defaultPath;
+  }
+  
+  // Resolve the path and ensure it's absolute
+  const resolvedPath = path.resolve(envPath);
+  
+  // Validate the path doesn't contain directory traversal attempts
+  const normalizedPath = path.normalize(resolvedPath);
+  if (normalizedPath !== resolvedPath || resolvedPath.includes('..')) {
+    console.warn('Invalid DATABASE_PATH detected, using default path');
+    return defaultPath;
+  }
+  
+  return resolvedPath;
+}
+
+const DB_PATH = getValidatedDbPath();
 
 let db: Database.Database | null = null;
 
 export function getDatabase(): Database.Database {
   if (!db) {
+    // Ensure the data directory exists
+    const dbDir = path.dirname(DB_PATH);
+    if (!fs.existsSync(dbDir)) {
+      fs.mkdirSync(dbDir, { recursive: true });
+    }
+    
     db = new Database(DB_PATH);
     db.pragma('journal_mode = WAL');
     initializeDatabase(db);

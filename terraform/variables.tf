@@ -20,3 +20,9 @@ variable "app_name" {
   type        = string
   default     = "asset-recording-app"
 }
+
+variable "allowed_ssh_cidr_blocks" {
+  description = "CIDR blocks allowed to SSH into the instance. Restrict this in production!"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}

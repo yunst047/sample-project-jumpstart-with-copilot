@@ -15,20 +15,24 @@ data "aws_ami" "amazon_linux_2023" {
 }
 
 # Security group for the EC2 instance
+# NOTE: This is a sample configuration. For production use:
+# - Restrict SSH access to specific IP ranges or use a bastion host
+# - Consider using a load balancer with proper security groups
+# - Implement VPC with private subnets for the application
 resource "aws_security_group" "app_sg" {
   name        = "${var.app_name}-sg"
   description = "Security group for Asset Recording Application"
 
-  # SSH access
+  # SSH access - IMPORTANT: Restrict to your IP range in production
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "SSH access"
+    cidr_blocks = var.allowed_ssh_cidr_blocks
+    description = "SSH access - restrict in production"
   }
 
-  # HTTP access
+  # HTTP access - Consider using HTTPS with a load balancer in production
   ingress {
     from_port   = 80
     to_port     = 80
