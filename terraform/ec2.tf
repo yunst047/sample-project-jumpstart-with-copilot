@@ -22,6 +22,7 @@ data "aws_ami" "amazon_linux_2023" {
 resource "aws_security_group" "app_sg" {
   name        = "${var.app_name}-sg"
   description = "Security group for Asset Recording Application"
+  vpc_id      = aws_vpc.main.id
 
   # SSH access - IMPORTANT: Restrict to your IP range in production
   ingress {
@@ -70,9 +71,10 @@ resource "aws_instance" "app_server" {
   instance_type          = var.instance_type
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.app_sg.id]
+  subnet_id              = aws_subnet.public.id
 
   root_block_device {
-    volume_size = 20
+    volume_size = 30
     volume_type = "gp3"
   }
 
